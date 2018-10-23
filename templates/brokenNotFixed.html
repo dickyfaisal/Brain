@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+{% load static %}
+{% load leaflet_tags %}
+  <head>
+    {% leaflet_js %}
+    {% leaflet_css %}
+    <meta charset="utf-8">
+    <title>Infromasi Jalan Rusak</title>
+    <style type="text/css">
+      #gis {width: 80%; height: 700px;}
+    </style>
+    <script type="text/javascript" src={% static 'dist/leaflet.ajax.js' %}></script>
+    <link rel="stylesheet" type="text/css" href={% static 'css/bootstrap.min.css' %}>
+    <script type="text/javascript" src={% static 'js/jquery-3.3.1.min.js' %}></script>
+    <script type="text/javascript" src={% static 'js/bootstrap.bundle.min.js' %}></script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <a class="navbar-brand" href="{% url 'home' %}">BRAIN</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'home' %}">Beranda</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Data Jalan Rusak
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="dropdown-item active" href="{% url 'notfixed' %}">Infromasi Jalan Rusak</a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="{% url 'add' %}">Tambah Data Jalan Rusak</a>
+            </div>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin">Login Admin</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <center>
+    <br>
+    <h3>Infromasi Jalan Rusak</h3>
+    <br>
+    <script type="text/javascript">
+      function our_layers(map,options){
+        var datasets = new L.GeoJSON.AJAX("{% url 'desa' %}",{
+          style: function colors(feature) { // Style option
+            switch (feature.properties.desa) {
+              case {% url 'brokenroadunfixed' %}:
+                return {
+                    'color': 'red'
+                }
+              break;
+              default:
+                return {
+                    'color': 'grey'
+                }
+            }
+          },
+          onEachFeature: function(feature, layer){
+            layer.bindPopup(feature.properties.desa.toString());
+          }
+        });
+
+        var redIcon = new L.Icon({
+          iconUrl: '{% static 'img/marker-icon-2x-red.png' %}',
+          shadowUrl: '{% static 'img/marker-shadow.png' %}',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41]
+        });
+
+        var greenIcon = new L.Icon({
+          iconUrl: '{% static 'img/marker-icon-2x-green.png' %}',
+          shadowUrl: '{% static 'img/marker-shadow.png' %}',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41]
+        });
+
+        var points = new L.GeoJSON.AJAX("{% url 'brokenroadunfixed' %}",{
+          onEachFeature: function(feature, layer){
+            layer.bindPopup(feature.properties.nama.toString());
+            layer.options.icon = redIcon;
+          }
+        });
+
+        var pointsfixed = new L.GeoJSON.AJAX("{% url 'brokenroadfixed' %}",{
+          onEachFeature: function(feature, layer){
+            layer.bindPopup(feature.properties.nama.toString());
+            layer.options.icon = greenIcon;
+          }
+        });
+
+        datasets.addTo(map);
+        points.addTo(map);
+        pointsfixed.addTo(map);
+      }
+    </script>
+    {% leaflet_map "gis" callback="window.our_layers" %}
+  </center>
+  </body>
+</html>

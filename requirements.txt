@@ -1,0 +1,8 @@
+Python
+Django
+GEOS
+PROJ
+GDAL
+Postgresql
+Postgis
+Leaflet
